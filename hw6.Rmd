@@ -1,0 +1,8 @@
+---
+title: "HW6"
+author: "Sarahy Martinez"
+date: "2024-12-01"
+output: github_document
+---
+
+
