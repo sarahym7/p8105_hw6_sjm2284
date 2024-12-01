@@ -5,4 +5,87 @@ date: "2024-12-01"
 output: github_document
 ---
 
+```{r}
+library(tidyverse)
+```
+
+
+
+#Problem 1 
+
+```{r, eval=FALSE}
+
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+
+
+```
+
+
+
+# Problem 2 
+
+## Problem 2A
+
+```{r}
+#reading in Washington post data 
+
+homicide_raw_data = read.csv("./homicide-data.csv")
+
+homicide = homicide_raw_data %>% 
+  unite(city_state, city, state, sep = ",") %>% 
+  mutate(disposition_case = case_when( disposition == "Closed without arrest"~ "unsolved",
+                                  disposition == "Closed by arrest" ~ "solved",
+                                  disposition == "Open/No arrest" ~ "unsolved")) %>%
+ filter(!city_state %in% c("Dallas,TX", "Phoenix,AZ", "Kansas City,MO", "Tulsa,AL")) %>% 
+  filter(victim_race %in% c("White", "Black")) %>% 
+  mutate(victim_age = as.numeric(victim_age))
+  
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Problem 3 
 
