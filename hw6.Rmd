@@ -7,6 +7,7 @@ output: github_document
 
 ```{r}
 library(tidyverse)
+library(broom)
 set.seed(1)
 
 ```
@@ -50,7 +51,8 @@ homicide = homicide_raw_data %>%
                                   disposition == "Open/No arrest" ~ "unresolved")) %>%
  filter(!city_state %in% c("Dallas,TX", "Phoenix,AZ", "Kansas City,MO", "Tulsa,AL")) %>% 
   filter(victim_race %in% c("White", "Black")) %>% 
-  mutate(victim_age = as.numeric(victim_age))
+  mutate(victim_age = as.numeric(victim_age)) %>% 
+  mutate(resolved = as.numeric(disposition_case == "resolved"))
   
 
 
@@ -96,7 +98,49 @@ Balt_fit_logistic %>% knitr::kable(digits = 3)
 
 
 
+## Problem 2C 
 
+```{r}
+
+
+# Nest data by city
+nested_data <- homicide %>%
+  group_by(city_state) %>%
+  nest()
+
+# Verify the nested data to ensure the resolved variable is included
+nested_data %>% slice(1) %>% pull(data) %>% str()
+
+# Function to run logistic regression and extract OR and CI
+run_logistic <- function(data) {
+  fit <- glm(resolved ~ victim_age + victim_race + victim_sex, data = data, family = binomial())
+  tidy_fit <- tidy(fit, conf.int = TRUE) %>%
+    mutate(
+      OR = exp(estimate),
+      OR_conf.low = exp(conf.low),
+      OR_conf.high = exp(conf.high)
+    ) %>%
+    filter(term == "victim_sexMale") %>%
+    select(term, log_OR = estimate, OR, p.value, OR_conf.low, OR_conf.high)
+  return(tidy_fit)
+}
+
+# Apply the function to each city's data and unnest the results
+results <- nested_data %>%
+  mutate(model = purrr::map(data, run_logistic)) %>%
+  unnest(model) %>% 
+    select (OR, OR_conf.low, OR_conf.high) %>% 
+  rename(Low = "OR_conf.low",
+          High = "OR_conf.high") 
+
+# Display the results
+results %>% knitr::kable(digits = 2)
+
+
+
+
+
+```
 
 
 
