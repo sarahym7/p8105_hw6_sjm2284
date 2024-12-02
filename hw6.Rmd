@@ -215,6 +215,25 @@ child_weight = child_weight %>%
 ```
 
 
+## Question 3c
+
+fitting the models and others 
+
+```{r}
+# original model 
+fit_original = lm(bwt ~ babysex + bhead + blength + delwt + fincome + frace + gaweeks + malform + menarche + mheight + momage + mrace + parity + pnumlbw + pnumsga + ppbmi + ppwt + smoken + wtgain, data = child_weight)
+
+# second model with only gestational age and length at birth as predictors 
+
+fit_gest_length = lm(bwt ~ blength +gaweeks, data = child_weight)
+
+# third model only using head circumference, length, sex, and interactions 
+
+fit_interactions = lm(bwt~babysex +bhead + blength + babysex*bhead*blength,data = child_weight)
+
+```
+
+Comparing models using cross validations 
 
 
 
