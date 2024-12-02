@@ -8,6 +8,7 @@ output: github_document
 ```{r}
 library(tidyverse)
 library(broom)
+library(modelr)
 set.seed(1)
 
 ```
@@ -190,6 +191,26 @@ fit = lm(bwt ~ babysex + bhead + blength + delwt + fincome + frace + gaweeks + m
 
 fitted.values(fit) # record of fitted values 
 residuals(fit) # gives us the residuals 
+
+# creating residuals and predictions 
+modelr::add_residuals(child_weight, fit) 
+modelr::add_predictions(child_weight, fit)
+
+# adding the residuals and predictions to the df 
+child_weight = child_weight %>% 
+  add_predictions(fit) %>% 
+  add_residuals(fit) 
+
+# plotting 
+ ggplot(child_weight, aes(x = pred, y = resid)) +
+  geom_point()+
+  geom_smooth()+
+  labs(
+    title = "Residuals vs. Fitted Values",
+    x = "Fitted Values",
+    y = "Residuals"
+  ) +
+  theme_minimal()
 
 ```
 
