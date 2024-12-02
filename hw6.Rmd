@@ -235,11 +235,57 @@ fit_interactions = lm(bwt~babysex +bhead + blength + babysex*bhead*blength,data 
 
 Comparing models using cross validations 
 
+```{r}
+# create cross validation df 
+
+cv_df = 
+  crossv_mc(child_weight, 100) %>%  #make validation set n =100
+  mutate(
+    train = map(train, as_tibble),
+    test = map(train, as_tibble)
+  )
+
+# fit model to splits and calculate RMSE
+cv_df = cv_df %>% 
+  mutate(
+    fit_original = map(train, ~lm(bwt ~ babysex + bhead + blength + delwt + fincome + frace + gaweeks + malform + menarche + mheight + momage + mrace + parity + pnumlbw + pnumsga + ppbmi + ppwt + smoken + wtgain, data = .x)), 
+    fit_gest_length = map(train, ~lm(bwt ~ blength + gaweeks, data = .x)),
+    fit_interactions = map(train, ~lm(bwt ~ babysex + bhead + blength + babysex * bhead * blength, data = .x))
+  ) %>% 
+  mutate(
+    rmse_original = map2_dbl(fit_original, test, ~rmse(model = .x, data = .y)),
+    rmse_gest_length = map2_dbl(fit_gest_length, test, ~rmse(model = .x, data = .y)),
+    rmse_interactions = map2_dbl(fit_interactions, test, ~rmse(model = .x, data = .y))
+  )
 
 
+```
 
 
+```{r}
+
+# plotting the rmse's 
+
+rmse_models = cv_df %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "model",
+    values_to = "rmse",
+    names_prefix = "rmse_"
+  ) %>% 
+  ggplot(aes(x = model, y = rmse))+
+  geom_violin()+
+  labs( title = "RMSE Distribution Across Cross-Validation Splits", 
+        x = "Model", y = "RMSE" ) + 
+  theme_minimal()
 
 
+print(rmse_models)
+
+```
+
+
+The plot above includes three models the original, gestation age and length and the interactions. The graph shows that gest_length has the highest RMSE values meanwhile the original model with all predictors is has the least. This means that the gest_length performs the worst in terms of prediction accuracy. This also indicates that the interactions model is neither the worst or the best but the original model works the best in prediction accuracy since it has lower rmse values. The distribution for the original model is also more narrow than the interactions and gest_length which allows us to conclude that the original model is more consistent than the others. 
 
 
