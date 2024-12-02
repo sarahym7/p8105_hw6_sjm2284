@@ -157,7 +157,49 @@ city_estimated = ggplot(city_results, aes(x = reorder(city_state, OR), y =OR))+
 
 Based on the plot we can see that New Mexico has the largest odds ratio  and confidence interval in comparison to New York who has the smallest OR and CI. This is interesting given that it is common knowledge that Chicago, IL has been considered the city and state with the highest homicide rate yet its OR is less than New York and Baton Rogue, LA. 
 
-
-
 # Problem 3 
+
+## Problem 3A 
+
+```{r}
+
+child_weight = read.csv("./birthweight.csv")
+
+child_weight = child_weight %>% 
+  mutate(
+    babysex = factor(babysex, levels = c(1, 2), labels = c("Male", "Female")),
+    frace = fct_relevel(factor(frace, levels = c(1, 2, 3, 4, 8, 9),
+                               labels = c("White", "Black", "Asian", "Puerto Rican", "Other", "Unknown")),
+                        "White", "Black"),
+    malform = factor(malform, levels = c(0, 1), labels = c("Absent", "Present")),
+    mrace = fct_relevel(factor(mrace, levels = c(1, 2, 3, 4, 8),
+                               labels = c("White", "Black", "Asian", "Puerto Rican", "Other")),
+                        "White", "Black"),
+gaweeks = as.numeric(gaweeks))
+
+```
+
+
+## Problem 3b
+
+```{r}
+
+# developing the regression model, writing the linear regression model with all the potential predictors of low birth weight 
+
+fit = lm(bwt ~ babysex + bhead + blength + delwt + fincome + frace + gaweeks + malform + menarche + mheight + momage + mrace + parity + pnumlbw + pnumsga + ppbmi + ppwt + smoken + wtgain, data = child_weight)
+
+fitted.values(fit) # record of fitted values 
+residuals(fit) # gives us the residuals 
+
+```
+
+
+
+
+
+
+
+
+
+
 
