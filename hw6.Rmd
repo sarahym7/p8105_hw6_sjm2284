@@ -90,7 +90,7 @@ Balt_fit_logistic =
   rename(low = "OR_conf.low",
           high = "OR_conf.high") 
 
-Balt_fit_logistic %>% knitr::kable(digits = 3)
+Balt_fit_logistic %>% knitr::kable(digits = 2)
 
 
 
@@ -103,18 +103,15 @@ Balt_fit_logistic %>% knitr::kable(digits = 3)
 ```{r}
 
 
-# Nest data by city
-nested_data <- homicide %>%
+# taking df homicide and nesting data by city
+homicide_data = homicide %>%
   group_by(city_state) %>%
   nest()
 
-# Verify the nested data to ensure the resolved variable is included
-nested_data %>% slice(1) %>% pull(data) %>% str()
-
-# Function to run logistic regression and extract OR and CI
-run_logistic <- function(data) {
-  fit <- glm(resolved ~ victim_age + victim_race + victim_sex, data = data, family = binomial())
-  tidy_fit <- tidy(fit, conf.int = TRUE) %>%
+# create a function for the logistic regression and extract OR and CI
+logistic = function(data) {
+  fit = glm(resolved ~ victim_age + victim_race + victim_sex, data = data, family = binomial())
+  tidy_fit = tidy(fit, conf.int = TRUE) %>%
     mutate(
       OR = exp(estimate),
       OR_conf.low = exp(conf.low),
@@ -125,42 +122,40 @@ run_logistic <- function(data) {
   return(tidy_fit)
 }
 
-# Apply the function to each city's data and unnest the results
-results <- nested_data %>%
-  mutate(model = purrr::map(data, run_logistic)) %>%
+# Apply the function to each city's data and unnest the results to return values
+city_results =
+  homicide_data %>%
+  mutate(model = purrr::map(data, logistic)) %>%
   unnest(model) %>% 
     select (OR, OR_conf.low, OR_conf.high) %>% 
   rename(Low = "OR_conf.low",
           High = "OR_conf.high") 
 
 # Display the results
-results %>% knitr::kable(digits = 2)
-
-
-
+city_results %>% knitr::kable(digits = 2)
 
 
 ```
 
 
 
+## Problem 2D
 
+```{r}
+# plotting the estimated ORs and CIs for each city according to estimated OR 
 
+city_estimated = ggplot(city_results, aes(x = reorder(city_state, OR), y =OR))+
+                          geom_point()+
+                          geom_line()+
+                          geom_errorbar(aes(ymin = Low, ymax = High), width = 0.2)+
+                          labs(title = "Estimated Odds Ratio and CI for Homcides Across Cities",
+                                                       x = "City",
+                                                        y = "Odds Ratio")+
+                              theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+Based on the plot we can see that New Mexico has the largest odds ratio  and confidence interval in comparison to New York who has the smallest OR and CI. This is interesting given that it is common knowledge that Chicago, IL has been considered the city and state with the highest homicide rate yet its OR is less than New York and Baton Rogue, LA. 
 
 
 
